@@ -1,6 +1,8 @@
 import random
 import numpy as np
 import nltk
+import os
+import ssl
 from nltk import pos_tag
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -11,8 +13,19 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 
 
-nltk.download('punkt')
-nltk.download('wordnet')
+# Define a directory for NLTK data
+nltk_data_path = os.path.expanduser('~/nltk_data')
+os.makedirs(nltk_data_path, exist_ok=True)
+
+# Set NLTK's data path
+nltk.data.path.append(nltk_data_path)
+
+# Download the required resources
+# necessary because nltk.download throws errors otherwise
+ssl._create_default_https_context = ssl._create_unverified_context
+nltk.download('punkt_tab', download_dir=nltk_data_path)
+nltk.download('wordnet', download_dir=nltk_data_path)
+nltk.download('averaged_perceptron_tagger_eng', download_dir=nltk_data_path)
 
 
 def set_seeds(seed=42):
@@ -124,10 +137,10 @@ def main():
 
     param_grid = [
         {
-            'vec': [CountVectorizer(token_pattern=None), TfidfVectorizer(token_pattern=None)],
-            'vec__max_df': [1.0, 0.95, 0.90, 0.85],
-            'vec__ngram_range': [(1, 1), (1, 2), (1, 3)],
-            'vec__max_features': [None, 100, 1000, 10000],
+            # 'vec': [CountVectorizer(token_pattern=None), TfidfVectorizer(token_pattern=None)],
+            # 'vec__max_df': [1.0, 0.95, 0.90, 0.85],
+            # 'vec__ngram_range': [(1, 1), (1, 2), (1, 3)],
+            # 'vec__max_features': [None, 100, 1000, 10000],
             'vec__tokenizer': [basic_tokenizer, stem_tokens, lemmatize_tokens, pos_tokenizer],
         }
     ]
