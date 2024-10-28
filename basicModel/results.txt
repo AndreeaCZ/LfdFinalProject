@@ -1,0 +1,26 @@
+Results for Naive Bayes:
+Best Parameters: {'alpha': 1.0, 'fit_prior': True}
+Accuracy: 0.7170
+Classification Report:
+              precision    recall  f1-score   support
+
+         NOT       0.74      0.86      0.80       648
+         OFF       0.64      0.45      0.53       352
+
+    accuracy                           0.72      1000
+   macro avg       0.69      0.66      0.66      1000
+weighted avg       0.71      0.72      0.70      1000
+
+Results for SVM:
+Best Parameters: {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}
+Accuracy: 0.7520
+Classification Report:
+              precision    recall  f1-score   support
+
+         NOT       0.77      0.89      0.82       648
+         OFF       0.71      0.50      0.59       352
+
+    accuracy                           0.75      1000
+   macro avg       0.74      0.69      0.70      1000
+weighted avg       0.75      0.75      0.74      1000
+
