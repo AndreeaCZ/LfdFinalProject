@@ -137,10 +137,10 @@ def main():
 
     param_grid = [
         {
-            # 'vec': [CountVectorizer(token_pattern=None), TfidfVectorizer(token_pattern=None)],
-            # 'vec__max_df': [1.0, 0.95, 0.90, 0.85],
-            # 'vec__ngram_range': [(1, 1), (1, 2), (1, 3)],
-            # 'vec__max_features': [None, 100, 1000, 10000],
+            'vec': [CountVectorizer(token_pattern=None), TfidfVectorizer(token_pattern=None)],
+            'vec__max_df': [1.0, 0.95, 0.90, 0.85],
+            'vec__ngram_range': [(1, 1), (1, 2), (1, 3)],
+            'vec__max_features': [None, 100, 1000, 10000],
             'vec__tokenizer': [basic_tokenizer, stem_tokens, lemmatize_tokens, pos_tokenizer],
         }
     ]
