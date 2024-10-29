@@ -1,18 +1,12 @@
 import random
-import numpy as np
-import nltk
-import os
-import ssl
-from nltk import pos_tag
-from nltk.stem import PorterStemmer, WordNetLemmatizer
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC
-import emoji
-from wordsegment import load, segment
 import re
+
+import emoji
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import classification_report
+from sklearn.svm import SVC
+from wordsegment import load, segment
 
 
 def set_seeds(seed=42):
