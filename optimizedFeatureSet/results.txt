@@ -1,0 +1,13 @@
+Results for SVM with optimized features:
+Best Parameters: {'vec': TfidfVectorizer(token_pattern=None), 'vec__max_df': 1.0, 'vec__max_features': 10000, 'vec__ngram_range': (1, 1), 'vec__tokenizer': <function basic_tokenizer at 0x7f6fc295fb00>}
+Accuracy: 0.7510
+Classification Report:
+              precision    recall  f1-score   support
+
+         NOT       0.76      0.90      0.82       648
+         OFF       0.72      0.47      0.57       352
+
+    accuracy                           0.75      1000
+   macro avg       0.74      0.69      0.70      1000
+weighted avg       0.75      0.75      0.74      1000
+
