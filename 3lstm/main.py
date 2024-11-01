@@ -1,60 +1,125 @@
 import random
+import random as python_random
+import argparse
 import re
 
 import emoji
 import numpy as np
+from keras.src.models import Sequential
+from keras.src.layers import Dense, Embedding, LSTM, Bidirectional
+from keras.src.initializers import Constant
+from keras.src.utils import to_categorical
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.preprocessing import LabelBinarizer
+from keras.src.optimizers import SGD, Adam, RMSprop
+from keras.src.layers import TextVectorization
+from keras import callbacks
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout, Bidirectional
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.metrics import classification_report
 from wordsegment import load, segment
-
-# Constants
-MAX_SEQUENCE_LENGTH = 100
-EMBEDDING_DIM = 100
-LSTM_UNITS = 32
-BATCH_SIZE = 32
-EPOCHS = 10
 
 
 def set_seeds(seed=42):
-    random.seed(seed)
     np.random.seed(seed)
+    tf.random.set_seed(seed)
+    python_random.seed(seed)
 
 
 def read_corpus(corpus_file):
     """
-    Reads the corpus file with each line containing a tweet and its label, separated by a tab.
+    Reads the corpus file with the label as the last token and provides tokenized documents and labels.
 
     :param corpus_file: The name of the corpus file to be processed
-    :return: Lists of tweet texts and labels
+    :return: The tokenized documents and labels
     """
     documents = []
     labels = []
     with open(corpus_file, encoding='utf-8') as in_file:
         for line in in_file:
-            tweet, label = line.strip().split('\t')
-            documents.append(tweet)
-            labels.append(1 if label == 'OFF' else 0)
+            tokens = line.strip().split()
+            label = tokens[-1]  # The label is the last token in the line
+            document = ' '.join(tokens[:-1])  # The document content is everything except the last token
+            documents.append(document)
+            labels.append(label)
     return documents, labels
 
 
-def write_results_to_file(results, model_name):
-    """
-    Writes the results of the model evaluation to a demojize_results.txt file.
+def read_embeddings(embeddings_file):
+    """Read in word embeddings from txt file and save as numpy array"""
+    embeddings = open(embeddings_file, encoding='utf-8').readlines()
+    return {line.split()[0]: np.array(line.split()[1:]) for line in embeddings}
 
-    :param results: The results to be written (classification report)
-    :param model_name: The name of the model for identification
-    """
-    with open('demojize_results.txt', 'a') as f:
-        f.write(f"Results for {model_name}:\n")
-        f.write("Classification Report:\n")
-        f.write(results)
-        f.write("\n")
+
+def get_emb_matrix(voc, emb):
+    """Get embedding matrix given vocab and the embeddings"""
+    num_tokens = len(voc) + 2
+    word_index = dict(zip(voc, range(len(voc))))
+    # Bit hacky, get embedding dimension from the word "the"
+    embedding_dim = len(emb["the"])
+    # Prepare embedding matrix to the correct size
+    embedding_matrix = np.zeros((num_tokens, embedding_dim))
+    for word, i in word_index.items():
+        embedding_vector = emb.get(word)
+        if embedding_vector is not None:
+            # Words not found in embedding index will be all-zeros.
+            embedding_matrix[i] = embedding_vector
+    # Final matrix with pretrained embeddings that we can feed to embedding layer
+    return embedding_matrix
+
+
+def create_model(Y_train, emb_matrix):
+    """Create the Keras model to use"""
+    # Define settings, you might want to create cmd line args for them
+    learning_rate = 0.0001
+    loss_function = 'categorical_crossentropy'
+    optim = Adam(learning_rate=learning_rate, weight_decay=0.3)
+    # Take embedding dim and size from emb_matrix
+    embedding_dim = len(emb_matrix[0])
+    num_tokens = len(emb_matrix)
+    num_labels = len(set(Y_train))
+    # Now build the model
+    model = Sequential()
+    model.add(Embedding(num_tokens, embedding_dim, embeddings_initializer=Constant(emb_matrix), trainable=True))
+    # Adding an extra dense layer
+    model.add(Dense(128, activation='relu'))
+    # Adding two Bidirectional LSTM layers
+    model.add(Bidirectional(LSTM(16, return_sequences=True, dropout=0.5, recurrent_dropout=0.5)))
+    model.add(Bidirectional(LSTM(8, return_sequences=False, dropout=0.3, recurrent_dropout=0.3)))
+    # Output layer
+    model.add(Dense(input_dim=embedding_dim, units=num_labels, activation="softmax"))
+    # Compile model using our settings, check for accuracy
+    model.compile(loss=loss_function, optimizer=optim, metrics=['f1_score'])
+    return model
+
+
+def train_model(model, X_train, Y_train, X_dev, Y_dev, encoder):
+    """Train the model here. Note the different settings you can experiment with!"""
+    verbose = 1
+    batch_size = 64
+    epochs = 15
+    # Early stopping: stop training when there are three consecutive epochs without improving
+    # It's also possible to monitor the training loss with monitor="loss"
+    callback = callbacks.EarlyStopping(monitor='val_loss', patience=3)
+    # Finally fit the model to our data
+    model.fit(X_train, Y_train, verbose=verbose, epochs=epochs, callbacks=[callback], batch_size=batch_size,
+              validation_data=(X_dev, Y_dev))
+    # Print final accuracy for the model (clearer overview)
+    test_set_predict(model, X_dev, Y_dev, "dev", encoder)
+    return model
+
+
+def test_set_predict(model, X_test, Y_test, ident, encoder):
+    """Do predictions and measure accuracy on our own test set (that we split off train)"""
+    # Get predictions using the trained model
+    Y_pred = model.predict(X_test)
+    # Finally, convert to numerical labels to get scores with sklearn
+    Y_pred = np.argmax(Y_pred, axis=1)
+    # If you have gold data, you can calculate accuracy
+    Y_test = np.argmax(Y_test, axis=1)
+    print('Accuracy on own {1} set: {0}'.format(round(accuracy_score(Y_test, Y_pred), 3), ident))
+
+    target_names = encoder.classes_
+    report = classification_report(Y_test, Y_pred, target_names=target_names)
+    print(f'Classification Report for {ident} set:\n{report}')
 
 
 def demojize_tweet(tweet):
@@ -72,82 +137,52 @@ def demojize_tweet(tweet):
     return tweet
 
 
-def load_embeddings(embedding_path, word_index):
-    embeddings_index = {}
-    with open(embedding_path, encoding="utf-8") as f:
-        for line in f:
-            values = line.split()
-            word = values[0]
-            coeffs = np.asarray(values[1:], dtype='float32')
-            embeddings_index[word] = coeffs
+def main():
+    load()
+    set_seeds()
+    # Read in the data and embeddings
+    X_train, Y_train = read_corpus('../train.tsv')
+    X_dev, Y_dev = read_corpus('../dev.tsv')
+    X_train = [demojize_tweet(tweet) for tweet in X_train]
+    X_dev = [demojize_tweet(tweet) for tweet in X_dev]
+    embeddings = read_embeddings('glove.twitter.27B.100d.txt')
 
-    # Initialize embedding matrix
-    num_words = min(len(word_index) + 1, MAX_SEQUENCE_LENGTH)
-    embedding_matrix = np.zeros((num_words, EMBEDDING_DIM))
-    for word, i in word_index.items():
-        if i >= MAX_SEQUENCE_LENGTH:
-            continue
-        embedding_vector = embeddings_index.get(word)
-        if embedding_vector is not None:
-            embedding_matrix[i] = embedding_vector
-    return embedding_matrix
+    # Transform words to indices using a vectorizer
+    vectorizer = TextVectorization(standardize=None, output_sequence_length=50)
+    # Use train and dev to create vocab - could also do just train
+    text_ds = tf.data.Dataset.from_tensor_slices(X_train + X_dev)
+    vectorizer.adapt(text_ds)
+    # Dictionary mapping words to idx
+    voc = vectorizer.get_vocabulary()
+    emb_matrix = get_emb_matrix(voc, embeddings)
 
+    # Transform string labels to one-hot encodings
+    encoder = LabelBinarizer()
+    Y_train_bin = encoder.fit_transform(Y_train)  # Use encoder.classes_ to find mapping back
+    Y_dev_bin = encoder.transform(Y_dev)
 
-# Preprocess text
-def tokenize_tweets(tweets):
-    tokenizer = Tokenizer()
-    tokenizer.fit_on_texts(tweets)
-    sequences = tokenizer.texts_to_sequences(tweets)
-    padded_sequences = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
-    return padded_sequences, tokenizer
+    Y_train_bin = to_categorical(Y_train_bin)
+    Y_dev_bin = to_categorical(Y_dev_bin)
 
+    # Create model
+    model = create_model(Y_train, emb_matrix)
 
-# Define the LSTM model
-def build_and_fit_lstm_model(embedding_matrix, X_train_seq, Y_train):
-    model = Sequential()
-    model.add(Embedding(input_dim=embedding_matrix.shape[0],
-                        output_dim=EMBEDDING_DIM,
-                        weights=[embedding_matrix],
-                        input_length=MAX_SEQUENCE_LENGTH,
-                        trainable=False))  # Static embeddings
-    model.add(Bidirectional(LSTM(LSTM_UNITS, dropout=0.2, recurrent_dropout=0.2)))
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+    # Transform input to vectorized input
+    X_train_vect = vectorizer(np.array([[s] for s in X_train])).numpy()
+    X_dev_vect = vectorizer(np.array([[s] for s in X_dev])).numpy()
 
     # Train the model
-    model.fit(X_train_seq, np.array(Y_train),
-              validation_split=0.2,
-              epochs=EPOCHS,
-              batch_size=BATCH_SIZE,
-              callbacks=[EarlyStopping(monitor='val_loss', patience=3)])
-              
-    return model
+    model = train_model(model, X_train_vect, Y_train_bin, X_dev_vect, Y_dev_bin, encoder)
+
+    # Do predictions on specified test set
+    # if args.test_file:
+    #     # Read in test set and vectorize
+    #     X_test, Y_test = read_corpus(args.test_file)
+    #     Y_test_bin = encoder.fit_transform(Y_test)
+    #     X_test_vect = vectorizer(np.array([[s] for s in X_test])).numpy()
+    #     # Finally do the predictions
+    #     test_set_predict(model, X_test_vect, Y_test_bin, "test", encoder)
 
 
-# Main function
-def main():
-    load() # Initialize wordsegment
-    set_seeds()
-
-    X_train, Y_train = read_corpus('../train.tsv')
-    X_test, Y_test = read_corpus('../dev.tsv')
-    X_train = [demojize_tweet(tweet) for tweet in X_train]
-    X_test = [demojize_tweet(tweet) for tweet in X_test]
-
-    # Prepare sequences and tokenizer
-    X_train_seq, tokenizer = tokenize_tweets(X_train)
-    X_test_seq, _ = tokenize_tweets(X_test)
-
-    # Load embeddings and build model
-    embedding_matrix = load_embeddings(f'glove.twitter.27B.{EMBEDDING_DIM}d.txt', tokenizer.word_index)
-    model = build_and_fit_lstm_model(embedding_matrix, X_train_seq, Y_train)
-
-    # Predict and evaluate
-    Y_pred_prob = model.predict(X_test_seq)
-    Y_pred = (Y_pred_prob > 0.5).astype("int32")
-    report = classification_report(Y_test, Y_pred)
-    print("Classification Report:\n", report)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
