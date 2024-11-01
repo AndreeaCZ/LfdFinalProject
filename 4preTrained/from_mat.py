@@ -61,7 +61,7 @@ def train_and_evaluate(X_train, Y_train, X_dev, Y_dev, max_seq_len, learning_rat
     Y_train_bin = to_categorical(Y_train_bin)
     Y_dev_bin = to_categorical(Y_dev_bin)
 
-    lm = "microsoft/deberta-v3-base"
+    lm = "google/electra-base-discriminator"
     tokenizer = AutoTokenizer.from_pretrained(lm)
     model = TFAutoModelForSequenceClassification.from_pretrained(lm, num_labels=2, from_pt=True)
     tokens_train = tokenizer(X_train, padding=True, max_length=max_seq_len, truncation=True, return_tensors="tf").data
@@ -94,7 +94,7 @@ def main():
     X_train = [demojize_tweet(tweet) for tweet in X_train]
     X_dev = [demojize_tweet(tweet) for tweet in X_dev]
 
-    train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 32, 2)
+    train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 128, 6)
 
 
 if __name__ == '__main__':

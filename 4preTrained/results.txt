@@ -214,3 +214,135 @@ Classification Report:
 weighted avg       0.78      0.79      0.78      1000
 
 
+Results for microsoft/deberta-v3-base with max_seq_len: 64, learning_rate: 2e-05, batch_size: 32, epochs: 3:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.84      0.88      0.86       648
+           1       0.75      0.68      0.71       352
+
+    accuracy                           0.81      1000
+   macro avg       0.79      0.78      0.78      1000
+weighted avg       0.81      0.81      0.81      1000
+
+
+Results for microsoft/deberta-v3-base with max_seq_len: 64, learning_rate: 2e-05, batch_size: 32, epochs: 4:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.87      0.80      0.83       648
+           1       0.67      0.77      0.72       352
+
+    accuracy                           0.79      1000
+   macro avg       0.77      0.79      0.78      1000
+weighted avg       0.80      0.79      0.79      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 2e-05, batch_size: 32, epochs: 4:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.83      0.83      0.83       648
+           1       0.69      0.69      0.69       352
+
+    accuracy                           0.78      1000
+   macro avg       0.76      0.76      0.76      1000
+weighted avg       0.78      0.78      0.78      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 2e-05, batch_size: 32, epochs: 2:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.84      0.84      0.84       648
+           1       0.71      0.71      0.71       352
+
+    accuracy                           0.80      1000
+   macro avg       0.78      0.78      0.78      1000
+weighted avg       0.80      0.80      0.80      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 2e-06, batch_size: 64, epochs: 2:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.82      0.83      0.83       648
+           1       0.68      0.67      0.68       352
+
+    accuracy                           0.77      1000
+   macro avg       0.75      0.75      0.75      1000
+weighted avg       0.77      0.77      0.77      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 2e-06, batch_size: 125, epochs: 4:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.84      0.82      0.83       648
+           1       0.68      0.71      0.70       352
+
+    accuracy                           0.78      1000
+   macro avg       0.76      0.77      0.76      1000
+weighted avg       0.78      0.78      0.78      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 5e-05, batch_size: 32, epochs: 4:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.86      0.79      0.83       648
+           1       0.67      0.77      0.72       352
+
+    accuracy                           0.79      1000
+   macro avg       0.77      0.78      0.77      1000
+weighted avg       0.79      0.79      0.79      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 5e-05, batch_size: 32, epochs: 6:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.86      0.75      0.80       648
+           1       0.63      0.77      0.69       352
+
+    accuracy                           0.76      1000
+   macro avg       0.74      0.76      0.75      1000
+weighted avg       0.78      0.76      0.76      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 5e-05, batch_size: 16, epochs: 6:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.65      1.00      0.79       648
+           1       0.00      0.00      0.00       352
+
+    accuracy                           0.65      1000
+   macro avg       0.32      0.50      0.39      1000
+weighted avg       0.42      0.65      0.51      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 5e-05, batch_size: 64, epochs: 6:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.88      0.72      0.79       648
+           1       0.61      0.82      0.70       352
+
+    accuracy                           0.75      1000
+   macro avg       0.75      0.77      0.75      1000
+weighted avg       0.79      0.75      0.76      1000
+
+
+Results for google/electra-base-discriminator with max_seq_len: 64, learning_rate: 5e-05, batch_size: 128, epochs: 6:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.87      0.75      0.80       648
+           1       0.63      0.80      0.70       352
+
+    accuracy                           0.77      1000
+   macro avg       0.75      0.77      0.75      1000
+weighted avg       0.79      0.77      0.77      1000
+
+
