@@ -12,8 +12,6 @@ to run.
 import random
 
 import numpy as np
-from tensorflow.keras.callbacks import LearningRateScheduler
-from tensorflow.keras.optimizers.schedules import PolynomialDecay
 from transformers import TFAutoModelForSequenceClassification
 from transformers import AutoTokenizer
 from tensorflow.keras.losses import CategoricalCrossentropy
