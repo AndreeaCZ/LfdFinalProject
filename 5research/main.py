@@ -11,7 +11,17 @@ def main():
     X_train = [demojize_tweet(tweet) for tweet in X_train]
     X_dev = [demojize_tweet(tweet) for tweet in X_dev]
 
-    report, model_name = train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 128, 6)
+    report, model_name = train_and_evaluate(
+        "roberta-base",
+        X_train,
+        Y_train,
+        X_dev,
+        Y_dev,
+        64,
+        5e-6,
+        128,
+        4
+    )
     model_name += '\n This model has sentiment analysis as an extra feature.'
     write_results_to_file('sentiment_results.txt', report, model_name)
 
