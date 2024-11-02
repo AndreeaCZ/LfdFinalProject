@@ -35,7 +35,7 @@ def main():
         128,
         4
     )
-    write_results_to_file('offensive_words_results.txt', report, model_name)
+    write_results_to_file('sentiment_results.txt', report, model_name)
 
     # Add sentiment analysis as an extra feature
     X_train_with_sentiment = [f"[SENTIMENT] {get_sentiment_score(tweet)} {tweet}" for tweet in X_train]
