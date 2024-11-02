@@ -61,7 +61,7 @@ def write_results_to_file(file, report, model_name):
         f.write("\n\n")
 
 
-def train_and_evaluate(lm, X_train, Y_train, X_dev, Y_dev, max_seq_len, learning_rate, batch_size, epochs):
+def train_and_evaluate(lm, X_train, Y_train, X_dev, Y_dev, max_seq_len, learning_rate, batch_size, epochs, extra_features):
     encoder = LabelBinarizer()
     Y_train_bin = encoder.fit_transform(Y_train)
     Y_dev_bin = encoder.transform(Y_dev)
@@ -73,6 +73,21 @@ def train_and_evaluate(lm, X_train, Y_train, X_dev, Y_dev, max_seq_len, learning
     model = TFAutoModelForSequenceClassification.from_pretrained(lm, num_labels=2, from_pt=True)
     tokens_train = tokenizer(X_train, padding=True, max_length=max_seq_len, truncation=True, return_tensors="tf").data
     tokens_dev = tokenizer(X_dev, padding=True, max_length=max_seq_len, truncation=True, return_tensors="tf").data
+
+    for feature in extra_features:
+        func = feature['function']
+        name = feature['name']
+        dtype = feature['dtype']
+        extra_feature_train = [func(tweet) for tweet in X_train]
+        extra_feature_dev = [func(tweet) for tweet in X_dev]
+
+        # Reshape the additional feature
+        extra_feature_tensor = tf.convert_to_tensor(extra_feature_train, dtype=dtype)
+        extra_feature_tensor = tf.convert_to_tensor(extra_feature_dev, dtype=dtype)
+
+        # Append the offensive percentages to the tokens
+        tokens_train[name] = tf.expand_dims(extra_feature_tensor, axis=1)
+        tokens_dev[name] = tf.expand_dims(extra_feature_tensor, axis=1)
 
     loss_function = CategoricalCrossentropy(from_logits=True)
     optim = Adam(learning_rate=learning_rate)
@@ -107,7 +122,8 @@ def main():
         64,
         5e-6,
         128,
-        4
+        4,
+        []
     )
     write_results_to_file('results.txt', report, model_name)
 
