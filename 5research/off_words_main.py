@@ -1,13 +1,12 @@
+import json
+
 from model import set_seeds, read_corpus, demojize_tweet, train_and_evaluate, write_results_to_file
 from wordsegment import load
 import tensorflow as tf
 import pandas as pd
 
-offensive_words_df = pd.read_csv('../OffensiveWords.csv', header=None)
-offensive_words = set(offensive_words_df[0].str.strip().str.lower())
 
-
-def percentage_offensive_words(tweet):
+def percentage_offensive_words(tweet, offensive_words):
     """
     Calculate the percentage of offensive words in the given tweet.
 
@@ -31,6 +30,11 @@ def main():
     X_train = [demojize_tweet(tweet) for tweet in X_train]
     X_dev = [demojize_tweet(tweet) for tweet in X_dev]
 
+    with open('../words.json') as f:
+        offensive_words = json.load(f)
+    X_train_with_percentage = [f"[OFFENSIVE_PERCENTAGE] {percentage_offensive_words(tweet, offensive_words)} {tweet}" for tweet in X_train]
+    X_dev_with_percentage = [f"[OFFENSIVE_PERCENTAGE] {percentage_offensive_words(tweet, offensive_words)} {tweet}" for tweet in X_dev]
+
     # # Run the model without extra features
     # report, model_name = train_and_evaluate(
     #     "roberta-base",
@@ -41,31 +45,21 @@ def main():
     #     64,
     #     5e-6,
     #     128,
-    #     4,
-    #     []
+    #     4
     # )
     # write_results_to_file('offensive_words_results.txt', report, model_name)
 
     # Run the model with extra features to compare the results
-    extra_features = [
-        {
-            'function': percentage_offensive_words,
-            'name': 'offensive_percentage',
-            'dtype': tf.float32
-        }
-    ]
-
     report, model_name = train_and_evaluate(
         "roberta-base",
-        X_train,
+        X_train_with_percentage,
         Y_train,
-        X_dev,
+        X_dev_with_percentage,
         Y_dev,
         64,
         5e-6,
         128,
-        4,
-        extra_features
+        4
     )
     model_name += '\nThis model uses a set of offensive words to determine the percentage of offensive words in the tweet and use it as a new feature.'
     write_results_to_file('offensive_words_results.txt', report, model_name)
