@@ -1,0 +1,25 @@
+Results for roberta-base with max_seq_len: 64, learning_rate: 5e-06, batch_size: 128, epochs: 4:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.85      0.87      0.86       648
+           1       0.75      0.72      0.73       352
+
+    accuracy                           0.82      1000
+   macro avg       0.80      0.79      0.80      1000
+weighted avg       0.81      0.82      0.82      1000
+
+
+Results for roberta-base with max_seq_len: 64, learning_rate: 5e-06, batch_size: 128, epochs: 4
+This model was tested with paraphrased tweets to see if it affects the model's performance.:
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.80      0.85      0.82       648
+           1       0.69      0.62      0.65       352
+
+    accuracy                           0.77      1000
+   macro avg       0.75      0.73      0.74      1000
+weighted avg       0.76      0.77      0.76      1000
+
+
