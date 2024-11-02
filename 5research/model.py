@@ -74,6 +74,11 @@ def train_and_evaluate(lm, X_train, Y_train, X_dev, Y_dev, max_seq_len, learning
     tokens_train = tokenizer(X_train, padding=True, max_length=max_seq_len, truncation=True, return_tensors="tf").data
     tokens_dev = tokenizer(X_dev, padding=True, max_length=max_seq_len, truncation=True, return_tensors="tf").data
 
+    # print("Training Tokens Shape:", tokens_train['input_ids'].shape)
+    # print("Training Attention Mask Shape:", tokens_train['attention_mask'].shape)
+    # print("Validation Tokens Shape:", tokens_dev['input_ids'].shape)
+    # print("Validation Attention Mask Shape:", tokens_dev['attention_mask'].shape)
+
     for feature in extra_features:
         func = feature['function']
         name = feature['name']
@@ -82,20 +87,20 @@ def train_and_evaluate(lm, X_train, Y_train, X_dev, Y_dev, max_seq_len, learning
         extra_feature_dev = [func(tweet) for tweet in X_dev]
 
         # Reshape the additional feature
-        extra_feature_tensor = tf.convert_to_tensor(extra_feature_train, dtype=dtype)
-        extra_feature_tensor = tf.convert_to_tensor(extra_feature_dev, dtype=dtype)
+        extra_train_tensor = tf.convert_to_tensor(extra_feature_train, dtype=dtype)
+        extra_dev_tensor = tf.convert_to_tensor(extra_feature_dev, dtype=dtype)
 
         # Append the offensive percentages to the tokens
-        tokens_train[name] = tf.expand_dims(extra_feature_tensor, axis=1)
-        tokens_dev[name] = tf.expand_dims(extra_feature_tensor, axis=1)
+        tokens_train[name] = tf.expand_dims(extra_train_tensor, axis=1)
+        tokens_dev[name] = tf.expand_dims(extra_dev_tensor, axis=1)
 
     loss_function = CategoricalCrossentropy(from_logits=True)
     optim = Adam(learning_rate=learning_rate)
 
-    print("Training Tokens Shape:", tokens_train.shape)
-    print("Training Labels Shape:", Y_train_bin.shape)
-    print("Validation Tokens Shape:", tokens_dev.shape)
-    print("Validation Labels Shape:", Y_dev_bin.shape)
+    # print("Training Tokens Shape After Adding Features:", {k: v.shape for k, v in tokens_train.items()})
+    # print("Training Labels Shape:", Y_train_bin.shape)
+    # print("Validation Tokens Shape After Adding Features:", {k: v.shape for k, v in tokens_dev.items()})
+    # print("Validation Labels Shape:", Y_dev_bin.shape)
 
     model.compile(loss=loss_function, optimizer=optim, metrics=['accuracy'])
     model.fit(tokens_train, Y_train_bin, verbose=1, epochs=epochs, batch_size=batch_size, validation_data=(tokens_dev, Y_dev_bin))
