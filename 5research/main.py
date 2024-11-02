@@ -1,4 +1,4 @@
-from model import set_seeds, read_corpus, demojize_tweet, train_and_evaluate
+from model import set_seeds, read_corpus, demojize_tweet, train_and_evaluate, write_results_to_file
 from wordsegment import load
 
 
@@ -11,7 +11,9 @@ def main():
     X_train = [demojize_tweet(tweet) for tweet in X_train]
     X_dev = [demojize_tweet(tweet) for tweet in X_dev]
 
-    train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 128, 6)
+    report, model_name = train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 128, 6)
+    model_name += '\n This model has sentiment analysis as an extra feature.'
+    write_results_to_file('sentiment_results.txt', report, model_name)
 
 
 if __name__ == '__main__':

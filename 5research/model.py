@@ -53,6 +53,14 @@ def demojize_tweet(tweet):
     return tweet.lower()
 
 
+def write_results_to_file(file, report, model_name):
+    with open(file, 'a') as f:
+        f.write(f"Results for {model_name}:\n")
+        f.write("Classification Report:\n")
+        f.write(report)
+        f.write("\n\n")
+
+
 def train_and_evaluate(X_train, Y_train, X_dev, Y_dev, max_seq_len, learning_rate, batch_size, epochs):
     encoder = LabelBinarizer()
     Y_train_bin = encoder.fit_transform(Y_train)
@@ -75,14 +83,11 @@ def train_and_evaluate(X_train, Y_train, X_dev, Y_dev, max_seq_len, learning_rat
 
     Y_pred = model.predict(tokens_dev)["logits"]
 
+    model_name = f"{lm} with max_seq_len: {max_seq_len}, learning_rate: {learning_rate}, batch_size: {batch_size}, epochs: {epochs}"
     report = classification_report(Y_dev_bin.argmax(axis=1), Y_pred.argmax(axis=1))
+    print(model_name)
     print(report)
-
-    with open('results.txt', 'a') as f:
-        f.write(f"Results for {lm} with max_seq_len: {max_seq_len}, learning_rate: {learning_rate}, batch_size: {batch_size}, epochs: {epochs}:\n")
-        f.write("Classification Report:\n")
-        f.write(report)
-        f.write("\n\n")
+    return report, model_name
 
 
 def main():
@@ -94,7 +99,8 @@ def main():
     X_train = [demojize_tweet(tweet) for tweet in X_train]
     X_dev = [demojize_tweet(tweet) for tweet in X_dev]
 
-    train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 128, 6)
+    report, model_name = train_and_evaluate(X_train, Y_train, X_dev, Y_dev, 64, 5e-5, 128, 6)
+    write_results_to_file('results.txt', report, model_name)
 
 
 if __name__ == '__main__':
