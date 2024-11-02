@@ -31,20 +31,20 @@ def main():
     X_train = [demojize_tweet(tweet) for tweet in X_train]
     X_dev = [demojize_tweet(tweet) for tweet in X_dev]
 
-    # Run the model without extra features
-    report, model_name = train_and_evaluate(
-        "roberta-base",
-        X_train,
-        Y_train,
-        X_dev,
-        Y_dev,
-        64,
-        5e-6,
-        128,
-        4,
-        []
-    )
-    write_results_to_file('offensive_words_results.txt', report, model_name)
+    # # Run the model without extra features
+    # report, model_name = train_and_evaluate(
+    #     "roberta-base",
+    #     X_train,
+    #     Y_train,
+    #     X_dev,
+    #     Y_dev,
+    #     64,
+    #     5e-6,
+    #     128,
+    #     4,
+    #     []
+    # )
+    # write_results_to_file('offensive_words_results.txt', report, model_name)
 
     # Run the model with extra features to compare the results
     extra_features = [

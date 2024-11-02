@@ -92,6 +92,11 @@ def train_and_evaluate(lm, X_train, Y_train, X_dev, Y_dev, max_seq_len, learning
     loss_function = CategoricalCrossentropy(from_logits=True)
     optim = Adam(learning_rate=learning_rate)
 
+    print("Training Tokens Shape:", tokens_train.shape)
+    print("Training Labels Shape:", Y_train_bin.shape)
+    print("Validation Tokens Shape:", tokens_dev.shape)
+    print("Validation Labels Shape:", Y_dev_bin.shape)
+
     model.compile(loss=loss_function, optimizer=optim, metrics=['accuracy'])
     model.fit(tokens_train, Y_train_bin, verbose=1, epochs=epochs, batch_size=batch_size, validation_data=(tokens_dev, Y_dev_bin))
 
