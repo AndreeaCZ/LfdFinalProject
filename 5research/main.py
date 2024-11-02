@@ -22,7 +22,7 @@ def main():
         128,
         4
     )
-    model_name += '\n This model has sentiment analysis as an extra feature.'
+    model_name += '\nThis model has sentiment analysis as an extra feature.'
     write_results_to_file('sentiment_results.txt', report, model_name)
 
 
